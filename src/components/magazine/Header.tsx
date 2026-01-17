@@ -1,18 +1,47 @@
 import { useState } from "react";
 import { Menu, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery, gql } from "@apollo/client";
 
-const navItems = [
-  { label: "Início", href: "#" },
-  { label: "Líderes", href: "#lideres" },
-  { label: "Negócios", href: "#negocios" },
-  { label: "Inovação", href: "#inovacao" },
-  { label: "Entrevistas", href: "#entrevistas" },
-  { label: "Opinião", href: "#opiniao" },
-];
+const GET_SECTIONS = gql`
+  query GetSections {
+    sections {
+      id
+      name
+      slug
+    }
+  }
+`;
+
+interface Section {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data } = useQuery<{ sections: Section[] }>(GET_SECTIONS);
+
+  const sections = data?.sections || [];
+  
+  const navItems = [
+    { label: "Início", href: "#" },
+    ...sections.filter(s => s && s.name).map(s => ({
+      label: s.name,
+      href: `#${s.slug || s.id}`
+    }))
+  ];
+
+  // Fallback if no sections loaded yet
+  const displayItems = navItems.length > 1 ? navItems : [
+    { label: "Início", href: "#" },
+    { label: "Líderes", href: "#lideres" },
+    { label: "Negócios", href: "#negocios" },
+    { label: "Inovação", href: "#inovacao" },
+    { label: "Entrevistas", href: "#entrevistas" },
+    { label: "Opinião", href: "#opiniao" },
+  ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -30,7 +59,7 @@ export const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
-            {navItems.map((item) => (
+            {displayItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
@@ -62,7 +91,7 @@ export const Header = () => {
         {isMenuOpen && (
           <nav className="lg:hidden py-6 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
-              {navItems.map((item) => (
+              {displayItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}

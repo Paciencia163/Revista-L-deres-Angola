@@ -1,8 +1,67 @@
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import leaderPortrait from "@/assets/leader-portrait.jpg";
+import { useQuery, gql } from "@apollo/client";
+import { useNavigate } from "react-router-dom";
+
+const GET_HERO_ARTICLES = gql`
+  query GetHeroArticles {
+    articles {
+      id
+      title
+      section {
+        name
+      }
+      edition {
+        coverImage
+      }
+      isFeatured
+      status
+    }
+  }
+`;
+
+interface HeroArticle {
+  id: string;
+  title: string;
+  section: {
+    name: string;
+  };
+  edition?: {
+    coverImage: string;
+  };
+  isFeatured: boolean;
+  status: string;
+}
 
 export const HeroSection = () => {
+  const navigate = useNavigate();
+  const { data } = useQuery<{ articles: HeroArticle[] }>(GET_HERO_ARTICLES);
+
+  const articles = data?.articles || [];
+  const publishedArticles = articles.filter(a => a && (a.status === 'published' || a.status === 'featured' || !a.status));
+  const featuredArticles = publishedArticles.filter(a => a?.isFeatured);
+  
+  const headlines = featuredArticles.length >= 4 
+    ? featuredArticles.slice(0, 4) 
+    : publishedArticles.slice(0, 4);
+
+  // Fallback if no articles found
+  const defaultHeadlines = [
+    { title: "O Futuro da Banca Angolana", section: { name: "Finanças" } },
+    { title: "Startups que Transformam", section: { name: "Tecnologia" } },
+    { title: "Liderança Feminina em Alta", section: { name: "Gestão" } },
+    { title: "Investir em 2025", section: { name: "Mercados" } },
+  ];
+
+  const displayHeadlines = headlines.length > 0 ? headlines.filter(h => h && h.title).map(h => ({
+    title: h.title,
+    category: h.section?.name || "Geral"
+  })) : defaultHeadlines;
+
+  const heroArticle = featuredArticles[0] || publishedArticles[0];
+  const heroImage = heroArticle?.edition?.coverImage || leaderPortrait;
+
   return (
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Background Pattern */}
@@ -43,7 +102,11 @@ export const HeroSection = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button variant="premium" size="xl">
+                <Button 
+                  variant="premium" 
+                  size="xl"
+                  onClick={() => heroArticle && navigate(`/artigo/${heroArticle.id}`)}
+                >
                   Ler Agora
                   <ChevronRight className="w-5 h-5" />
                 </Button>
@@ -58,12 +121,7 @@ export const HeroSection = () => {
               className="mt-12 grid grid-cols-2 gap-4 opacity-0 animate-fade-in"
               style={{ animationDelay: "0.6s" }}
             >
-              {[
-                { title: "O Futuro da Banca Angolana", category: "Finanças" },
-                { title: "Startups que Transformam", category: "Tecnologia" },
-                { title: "Liderança Feminina em Alta", category: "Gestão" },
-                { title: "Investir em 2025", category: "Mercados" },
-              ].map((item, index) => (
+              {displayHeadlines.map((item, index) => (
                 <div
                   key={index}
                   className="text-left p-4 border-l-2 border-primary/30 hover:border-primary transition-colors duration-300 group cursor-pointer"
@@ -90,8 +148,8 @@ export const HeroSection = () => {
               {/* Main image container */}
               <div className="relative overflow-hidden rounded-lg shadow-[0_25px_80px_-20px_hsl(43_74%_49%/0.3)]">
                 <img
-                  src={leaderPortrait}
-                  alt="Líder Empresarial Angolano"
+                  src={heroImage}
+                  alt={heroArticle?.title || "Líder Empresarial Angolano"}
                   className="w-full aspect-[3/4] object-cover"
                 />
 
@@ -102,10 +160,10 @@ export const HeroSection = () => {
                 <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
                   <span className="category-tag">Capa</span>
                   <h2 className="text-2xl lg:text-3xl font-serif font-bold text-foreground mt-2">
-                    A Visão de um Líder
+                    {heroArticle?.title || "A Visão de um Líder"}
                   </h2>
                   <p className="text-muted-foreground mt-2">
-                    Estratégias para o crescimento económico sustentável
+                    {heroArticle?.section?.name || "Estratégias para o crescimento económico sustentável"}
                   </p>
                 </div>
               </div>

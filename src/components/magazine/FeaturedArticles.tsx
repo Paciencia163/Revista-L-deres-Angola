@@ -1,47 +1,96 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useQuery, gql } from "@apollo/client";
+import { useNavigate } from "react-router-dom";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
-const articles = [
-  {
-    id: 1,
-    category: "Liderança",
-    title: "Os 10 Princípios da Liderança Moderna em África",
-    excerpt: "Descubra como os líderes africanos estão a redefinir o conceito de gestão empresarial no século XXI.",
-    author: "Maria Santos",
-    date: "5 Dez 2024",
-    featured: true,
-  },
-  {
-    id: 2,
-    category: "Tecnologia",
-    title: "Fintech Angolana Atrai Investimento Recorde",
-    excerpt: "A transformação digital do sector financeiro acelera com novas soluções de pagamento.",
-    author: "João Fernandes",
-    date: "4 Dez 2024",
-    featured: false,
-  },
-  {
-    id: 3,
-    category: "Empreendedorismo",
-    title: "De Luanda para o Mundo: Startups que Exportam Inovação",
-    excerpt: "Histórias de sucesso de empresas angolanas que conquistaram mercados internacionais.",
-    author: "Ana Nascimento",
-    date: "3 Dez 2024",
-    featured: false,
-  },
-  {
-    id: 4,
-    category: "Gestão",
-    title: "Sustentabilidade Empresarial: O Novo Imperativo",
-    excerpt: "Como as empresas angolanas estão a integrar práticas ESG nas suas estratégias de crescimento.",
-    author: "Pedro Almeida",
-    date: "2 Dez 2024",
-    featured: false,
-  },
-];
+const GET_ARTICLES = gql`
+  query GetArticles {
+    articles {
+      id
+      title
+      excerpt
+      status
+      isFeatured
+      author {
+        name
+      }
+      section {
+        name
+      }
+      edition {
+        coverImage
+      }
+      createdAt
+    }
+  }
+`;
+
+interface Article {
+  id: string;
+  title: string;
+  excerpt: string;
+  status: string;
+  isFeatured: boolean;
+  author: {
+    name: string;
+  };
+  section: {
+    name: string;
+  };
+  edition?: {
+    coverImage: string;
+  };
+  createdAt: string;
+}
 
 export const FeaturedArticles = () => {
-  const mainArticle = articles[0];
-  const sideArticles = articles.slice(1);
+  const navigate = useNavigate();
+  const { loading, error, data } = useQuery<{ articles: Article[] }>(GET_ARTICLES);
+
+  if (loading) return (
+    <div className="container mx-auto px-4 py-20 text-center">
+      <p className="body-text animate-pulse">Carregando artigos...</p>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="container mx-auto px-4 py-20 text-center text-red-500">
+      <p>Erro ao carregar artigos: {error.message}</p>
+    </div>
+  );
+
+  const allArticles = data?.articles || [];
+  // Filter published articles and sort them or follow some logic
+  const publishedArticles = allArticles.filter(a => a && (a.status === 'published' || a.status === 'featured' || !a.status));
+  
+  // Use featured articles for carousel, others for side list
+  const featuredArticles = publishedArticles.filter(a => a?.isFeatured);
+  
+  if (publishedArticles.length === 0) return null;
+
+  // Let's use up to 3 for carousel, and the rest for side
+  const carouselArticles = featuredArticles.length > 0 ? featuredArticles.slice(0, 3) : publishedArticles.slice(0, 1);
+  const carouselIds = new Set(carouselArticles.map(a => a.id));
+  const sideArticles = publishedArticles.filter(a => !carouselIds.has(a.id)).slice(0, 3);
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    try {
+      return new Date(dateString).toLocaleDateString('pt-AO', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
     <section id="negocios" className="py-20 lg:py-32 bg-card">
@@ -61,36 +110,63 @@ export const FeaturedArticles = () => {
           </a>
         </div>
 
-        {/* Articles Grid */}
+        {/* Articles Grid with Carousel */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Featured Article */}
+          {/* Main Featured Carousel */}
           <div className="lg:col-span-2">
-            <article className="group cursor-pointer h-full">
-              <div className="relative overflow-hidden rounded-lg bg-muted aspect-[16/9] lg:aspect-[16/10]">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-9xl font-serif text-primary/10 font-bold select-none">
-                    L
-                  </div>
+            <Carousel className="w-full h-full" opts={{ loop: true }}>
+              <CarouselContent className="h-full">
+                {carouselArticles.map((article) => (
+                  <CarouselItem key={article.id} className="h-full">
+                    <article 
+                      className="group cursor-pointer h-full"
+                      onClick={() => navigate(`/artigo/${article.id}`)}
+                    >
+                      <div className="relative overflow-hidden rounded-lg bg-muted aspect-[16/9] lg:aspect-[16/10] h-full">
+                        {article.edition?.coverImage ? (
+                          <img 
+                            src={article.edition.coverImage} 
+                            alt={article.title}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <>
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="text-9xl font-serif text-primary/10 font-bold select-none">
+                                L
+                              </div>
+                            </div>
+                          </>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
+                        
+                        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-10">
+                          <span className="category-tag">{article.section?.name || "Geral"}</span>
+                          <h3 className="article-title text-2xl lg:text-3xl mt-3 text-foreground group-hover:text-primary">
+                            {article.title}
+                          </h3>
+                          <p className="body-text mt-3 line-clamp-2 lg:line-clamp-3">
+                            {article.excerpt}
+                          </p>
+                          <div className="flex items-center gap-4 mt-4">
+                            <span className="text-sm text-foreground">{article.author?.name}</span>
+                            <span className="w-1 h-1 rounded-full bg-primary" />
+                            <span className="text-sm text-muted-foreground">{formatDate(article.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              {carouselArticles.length > 1 && (
+                <div className="absolute bottom-6 right-20 flex gap-2">
+                  <CarouselPrevious className="relative left-0 translate-y-0 border-primary/30 hover:bg-primary/10" />
+                  <CarouselNext className="relative right-0 translate-y-0 border-primary/30 hover:bg-primary/10" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
-                
-                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-10">
-                  <span className="category-tag">{mainArticle.category}</span>
-                  <h3 className="article-title text-2xl lg:text-3xl mt-3 text-foreground group-hover:text-primary">
-                    {mainArticle.title}
-                  </h3>
-                  <p className="body-text mt-3 line-clamp-2 lg:line-clamp-3">
-                    {mainArticle.excerpt}
-                  </p>
-                  <div className="flex items-center gap-4 mt-4">
-                    <span className="text-sm text-foreground">{mainArticle.author}</span>
-                    <span className="w-1 h-1 rounded-full bg-primary" />
-                    <span className="text-sm text-muted-foreground">{mainArticle.date}</span>
-                  </div>
-                </div>
-              </div>
-            </article>
+              )}
+            </Carousel>
           </div>
 
           {/* Side Articles */}
@@ -98,15 +174,16 @@ export const FeaturedArticles = () => {
             {sideArticles.map((article) => (
               <article
                 key={article.id}
+                onClick={() => navigate(`/artigo/${article.id}`)}
                 className="group cursor-pointer p-6 border border-border rounded-lg hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_hsl(43_74%_49%/0.1)]"
               >
-                <span className="category-tag">{article.category}</span>
+                <span className="category-tag">{article.section?.name || "Geral"}</span>
                 <h3 className="article-title text-lg mt-2">{article.title}</h3>
                 <p className="body-text text-sm mt-2 line-clamp-2">{article.excerpt}</p>
                 <div className="flex items-center gap-3 mt-4">
-                  <span className="text-xs text-foreground">{article.author}</span>
+                  <span className="text-xs text-foreground">{article.author?.name}</span>
                   <span className="w-1 h-1 rounded-full bg-primary/50" />
-                  <span className="text-xs text-muted-foreground">{article.date}</span>
+                  <span className="text-xs text-muted-foreground">{formatDate(article.createdAt)}</span>
                 </div>
               </article>
             ))}

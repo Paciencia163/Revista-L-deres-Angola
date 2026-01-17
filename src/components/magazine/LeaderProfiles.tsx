@@ -1,37 +1,72 @@
 import { ArrowUpRight } from "lucide-react";
+import { useQuery, gql } from "@apollo/client";
 
-const leaders = [
-  {
-    id: 1,
-    name: "Isabel dos Santos",
-    role: "Empresária",
-    sector: "Investimentos",
-    quote: "O futuro de África passa pela educação e inovação tecnológica.",
-  },
-  {
-    id: 2,
-    name: "Carlos Saturnino",
-    role: "CEO",
-    sector: "Energia",
-    quote: "A transição energética é uma oportunidade única para Angola.",
-  },
-  {
-    id: 3,
-    name: "Mário Palhares",
-    role: "Fundador",
-    sector: "Tecnologia",
-    quote: "As startups angolanas estão prontas para competir globalmente.",
-  },
-  {
-    id: 4,
-    name: "Teresa Fernandes",
-    role: "Directora",
-    sector: "Finanças",
-    quote: "A inclusão financeira é a chave para o desenvolvimento sustentável.",
-  },
-];
+const GET_LEADERS = gql`
+  query GetUsersByRole($role: String!) {
+    usersByRole(role: $role) {
+      id
+      name
+      role
+      avatar
+    }
+  }
+`;
+
+interface Leader {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+}
 
 export const LeaderProfiles = () => {
+  const { data } = useQuery<{ usersByRole: Leader[] }>(GET_LEADERS, {
+    variables: { role: 'writer' } // Or another role that makes sense for "Leaders"
+  });
+
+  const leadersFromApi = data?.usersByRole || [];
+
+  const defaultLeaders = [
+    {
+      id: "1",
+      name: "Isabel dos Santos",
+      role: "Empresária",
+      sector: "Investimentos",
+      quote: "O futuro de África passa pela educação e inovação tecnológica.",
+    },
+    {
+      id: "2",
+      name: "Carlos Saturnino",
+      role: "CEO",
+      sector: "Energia",
+      quote: "A transição energética é uma oportunidade única para Angola.",
+    },
+    {
+      id: "3",
+      name: "Mário Palhares",
+      role: "Fundador",
+      sector: "Tecnologia",
+      quote: "As startups angolanas estão prontas para competir globalmente.",
+    },
+    {
+      id: "4",
+      name: "Teresa Fernandes",
+      role: "Directora",
+      sector: "Finanças",
+      quote: "A inclusão financeira é a chave para o desenvolvimento sustentável.",
+    },
+  ];
+
+  const displayLeaders = leadersFromApi.length > 0 
+    ? leadersFromApi.filter(l => l !== null).map(l => ({
+        id: l.id,
+        name: l.name || "Anónimo",
+        role: l.role || "Líder",
+        sector: "Liderança", 
+        quote: "Líder em destaque na nossa plataforma."
+      }))
+    : defaultLeaders;
+
   return (
     <section id="lideres" className="py-20 lg:py-32 bg-background relative overflow-hidden">
       {/* Background decoration */}
@@ -51,7 +86,7 @@ export const LeaderProfiles = () => {
 
         {/* Leaders Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {leaders.map((leader, index) => (
+          {displayLeaders.map((leader, index) => (
             <article
               key={leader.id}
               className="group relative bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_hsl(43_74%_49%/0.2)] cursor-pointer opacity-0 animate-fade-in"
