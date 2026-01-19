@@ -2,10 +2,26 @@ import { Button } from "@/components/ui/button";
 import { Mail, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, gql } from "@apollo/client";
+
+const GET_STATS = gql`
+  query GetStats {
+    articles {
+      id
+    }
+    editions {
+      id
+    }
+  }
+`;
 
 export const Newsletter = () => {
   const [email, setEmail] = useState("");
   const { toast } = useToast();
+  const { data } = useQuery(GET_STATS);
+
+  const articlesCount = data?.articles?.length || 0;
+  const editionsCount = data?.editions?.length || 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,8 +83,8 @@ export const Newsletter = () => {
           <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
             {[
               { value: "25K+", label: "Subscritores" },
-              { value: "500+", label: "Artigos" },
-              { value: "50+", label: "Edições" },
+              { value: `${articlesCount}+`, label: "Artigos" },
+              { value: `${editionsCount}+`, label: "Edições" },
             ].map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-3xl lg:text-4xl font-serif font-bold text-gradient-gold">
