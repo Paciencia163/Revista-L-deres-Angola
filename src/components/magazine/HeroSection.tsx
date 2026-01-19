@@ -3,6 +3,13 @@ import { ChevronRight } from "lucide-react";
 import leaderPortrait from "@/assets/leader-portrait.jpg";
 import { useQuery, gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const GET_HERO_ARTICLES = gql`
   query GetHeroArticles {
@@ -135,9 +142,9 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* Cover Image */}
+          {/* Cover Image Carousel */}
           <div
-            className="order-1 lg:order-2 relative opacity-0 animate-fade-in-right"
+            className="order-1 lg:order-2 relative opacity-0 animate-fade-in-right w-full"
             style={{ animationDelay: "0.4s" }}
           >
             <div className="relative max-w-md mx-auto lg:max-w-none">
@@ -145,28 +152,68 @@ export const HeroSection = () => {
               <div className="absolute -inset-4 border border-primary/20 rounded-lg" />
               <div className="absolute -inset-8 border border-primary/10 rounded-lg hidden lg:block" />
 
-              {/* Main image container */}
-              <div className="relative overflow-hidden rounded-lg shadow-[0_25px_80px_-20px_hsl(43_74%_49%/0.3)]">
-                <img
-                  src={heroImage}
-                  alt={heroArticle?.title || "Líder Empresarial Angolano"}
-                  className="w-full aspect-[3/4] object-cover"
-                />
+              <Carousel className="w-full" opts={{ loop: true }}>
+                <CarouselContent>
+                  {featuredArticles.length > 0 ? (
+                    featuredArticles.slice(0, 5).map((article) => (
+                      <CarouselItem key={article.id}>
+                        {/* Main image container */}
+                        <div 
+                          className="relative overflow-hidden rounded-lg shadow-[0_25px_80px_-20px_hsl(43_74%_49%/0.3)] cursor-pointer group"
+                          onClick={() => navigate(`/artigo/${article.id}`)}
+                        >
+                          <img
+                            src={article.edition?.coverImage || leaderPortrait}
+                            alt={article.title}
+                            className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
 
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
+                          {/* Overlay gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
 
-                {/* Featured person info */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
-                  <span className="category-tag">Capa</span>
-                  <h2 className="text-2xl lg:text-3xl font-serif font-bold text-foreground mt-2">
-                    {heroArticle?.title || "A Visão de um Líder"}
-                  </h2>
-                  <p className="text-muted-foreground mt-2">
-                    {heroArticle?.section?.name || "Estratégias para o crescimento económico sustentável"}
-                  </p>
-                </div>
-              </div>
+                          {/* Featured person info */}
+                          <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
+                            <span className="category-tag">Em Destaque</span>
+                            <h2 className="text-2xl lg:text-3xl font-serif font-bold text-foreground mt-2 group-hover:text-primary transition-colors">
+                              {article.title}
+                            </h2>
+                            <p className="text-muted-foreground mt-2 line-clamp-2">
+                              {article.section?.name || "Estratégias para o crescimento económico sustentável"}
+                            </p>
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    ))
+                  ) : (
+                    <CarouselItem>
+                      <div className="relative overflow-hidden rounded-lg shadow-[0_25px_80px_-20px_hsl(43_74%_49%/0.3)]">
+                        <img
+                          src={leaderPortrait}
+                          alt="Líder Empresarial Angolano"
+                          className="w-full aspect-[3/4] object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
+                        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
+                          <span className="category-tag">Capa</span>
+                          <h2 className="text-2xl lg:text-3xl font-serif font-bold text-foreground mt-2">
+                            A Visão de um Líder
+                          </h2>
+                          <p className="text-muted-foreground mt-2">
+                            Estratégias para o crescimento económico sustentável
+                          </p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  )}
+                </CarouselContent>
+                
+                {featuredArticles.length > 1 && (
+                  <div className="absolute -bottom-12 right-0 flex gap-2">
+                    <CarouselPrevious className="relative left-0 translate-y-0 border-primary/30 hover:bg-primary/10 text-primary" />
+                    <CarouselNext className="relative right-0 translate-y-0 border-primary/30 hover:bg-primary/10 text-primary" />
+                  </div>
+                )}
+              </Carousel>
 
               {/* Decorative corner accents */}
               <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-primary" />
