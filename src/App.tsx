@@ -2,32 +2,38 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ApolloProvider } from "@apollo/client";
-import client from "./lib/apolloClient";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import ArticleDetail from "./pages/ArticleDetail";
+import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
+import Article from "./pages/Article";
+import Editions from "./pages/Editions";
+import CategoryArticles from "./pages/CategoryArticles";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ApolloProvider client={client}>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/artigo/:id" element={<ArticleDetail />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/artigo/:slug" element={<Article />} />
+            <Route path="/edicoes" element={<Editions />} />
+            <Route path="/categoria/:slug" element={<CategoryArticles />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ApolloProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
 );
 
 export default App;
