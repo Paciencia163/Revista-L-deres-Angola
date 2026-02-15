@@ -36,6 +36,7 @@ export const Header = () => {
           <div className="flex items-center gap-4">
             <button className="text-foreground hover:text-primary transition-colors"><Search className="w-5 h-5" /></button>
             <Button variant="gold" size="sm" className="hidden md:flex" asChild><a href="/#newsletter">Subscrever</a></Button>
+            <Button variant="outline" size="sm" className="hidden md:flex" asChild><Link to="/admin">Area reserva</Link></Button>
             <button className="lg:hidden text-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -53,6 +54,7 @@ export const Header = () => {
                 )
               ))}
               <Button variant="gold" className="mt-4 w-full" asChild><a href="/#newsletter" onClick={() => setIsMenuOpen(false)}>Subscrever</a></Button>
+              <Button variant="outline" className="mt-2 w-full" asChild><Link to="/admin" onClick={() => setIsMenuOpen(false)}>Area reserva</Link></Button>
             </div>
           </nav>
         )}
