@@ -54,7 +54,7 @@ export const Header = () => {
                 )
               ))}
               <Button variant="gold" className="mt-4 w-full" asChild><a href="/#newsletter" onClick={() => setIsMenuOpen(false)}>Subscrever</a></Button>
-              <Button variant="outline" className="mt-2 w-full" asChild><Link to="/admin" onClick={() => setIsMenuOpen(false)}>Area reserva</Link></Button>
+              <Button variant="outline" className="mt-2 w-full" asChild><Link to="/admin" onClick={() => setIsMenuOpen(false)}>Area reservada</Link></Button>
             </div>
           </nav>
         )}
