@@ -244,6 +244,96 @@ export type Database = {
         }
         Relationships: []
       }
+      interviews: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          interviewee_name: string
+          interviewee_photo_url: string | null
+          interviewee_role: string | null
+          is_published: boolean
+          quote: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          video_duration: string | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          interviewee_name: string
+          interviewee_photo_url?: string | null
+          interviewee_role?: string | null
+          is_published?: boolean
+          quote?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          video_duration?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          interviewee_name?: string
+          interviewee_photo_url?: string | null
+          interviewee_role?: string | null
+          is_published?: boolean
+          quote?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          video_duration?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      leader_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          display_order: number
+          id: string
+          is_published: boolean
+          name: string
+          photo_url: string | null
+          quote: string | null
+          role: string
+          sector: string
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_published?: boolean
+          name: string
+          photo_url?: string | null
+          quote?: string | null
+          role: string
+          sector: string
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_published?: boolean
+          name?: string
+          photo_url?: string | null
+          quote?: string | null
+          role?: string
+          sector?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string

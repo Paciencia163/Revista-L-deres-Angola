@@ -1,45 +1,54 @@
 import { ArrowUpRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-const leaders = [
-  {
-    id: 1,
-    name: "Isabel dos Santos",
-    role: "Empresária",
-    sector: "Investimentos",
-    quote: "O futuro de África passa pela educação e inovação tecnológica.",
-  },
-  {
-    id: 2,
-    name: "Carlos Saturnino",
-    role: "CEO",
-    sector: "Energia",
-    quote: "A transição energética é uma oportunidade única para Angola.",
-  },
-  {
-    id: 3,
-    name: "Mário Palhares",
-    role: "Fundador",
-    sector: "Tecnologia",
-    quote: "As startups angolanas estão prontas para competir globalmente.",
-  },
-  {
-    id: 4,
-    name: "Teresa Fernandes",
-    role: "Directora",
-    sector: "Finanças",
-    quote: "A inclusão financeira é a chave para o desenvolvimento sustentável.",
-  },
+interface Leader {
+  id: string;
+  name: string;
+  role: string;
+  sector: string;
+  quote: string | null;
+  bio: string | null;
+  photo_url: string | null;
+  display_order: number;
+}
+
+const fallbackLeaders = [
+  { id: "1", name: "Isabel dos Santos", role: "Empresária", sector: "Investimentos", quote: "O futuro de África passa pela educação e inovação tecnológica.", bio: null, photo_url: null, display_order: 0 },
+  { id: "2", name: "Carlos Saturnino", role: "CEO", sector: "Energia", quote: "A transição energética é uma oportunidade única para Angola.", bio: null, photo_url: null, display_order: 1 },
+  { id: "3", name: "Mário Palhares", role: "Fundador", sector: "Tecnologia", quote: "As startups angolanas estão prontas para competir globalmente.", bio: null, photo_url: null, display_order: 2 },
+  { id: "4", name: "Teresa Fernandes", role: "Directora", sector: "Finanças", quote: "A inclusão financeira é a chave para o desenvolvimento sustentável.", bio: null, photo_url: null, display_order: 3 },
 ];
 
 export const LeaderProfiles = () => {
+  const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('leader_profiles' as any)
+        .select('*')
+        .eq('is_published', true)
+        .order('display_order');
+      if (data && (data as any[]).length > 0) {
+        setLeaders(data as any as Leader[]);
+      } else {
+        setLeaders(fallbackLeaders);
+      }
+      setLoaded(true);
+    };
+    fetch();
+  }, []);
+
+  if (!loaded) return null;
+
   return (
     <section id="lideres" className="py-20 lg:py-32 bg-background relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       <div className="container mx-auto px-4">
-        {/* Section Header */}
         <div className="text-center mb-16">
           <span className="category-tag">Perfis</span>
           <h2 className="section-title mt-2">Líderes que Inspiram</h2>
@@ -49,41 +58,54 @@ export const LeaderProfiles = () => {
           </p>
         </div>
 
-        {/* Leaders Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {leaders.map((leader, index) => (
             <article
               key={leader.id}
-              className="group relative bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_hsl(43_74%_49%/0.2)] cursor-pointer opacity-0 animate-fade-in"
+              className="group relative bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_hsl(43_74%_49%/0.2)] cursor-pointer opacity-0 animate-fade-in"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Number indicator */}
-              <div className="absolute -top-3 -right-3 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+              <div className="absolute top-3 right-3 z-10 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
                 {String(index + 1).padStart(2, "0")}
               </div>
 
-              {/* Avatar placeholder */}
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
-                <span className="text-2xl font-serif font-bold text-primary">
-                  {leader.name.charAt(0)}
-                </span>
-              </div>
+              {/* Photo or avatar */}
+              {leader.photo_url ? (
+                <div className="w-full h-48 overflow-hidden">
+                  <img
+                    src={leader.photo_url}
+                    alt={leader.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-48 bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                  <span className="text-5xl font-serif font-bold text-primary">
+                    {leader.name.charAt(0)}
+                  </span>
+                </div>
+              )}
 
-              {/* Info */}
-              <div className="space-y-2">
-                <span className="category-tag text-xs">{leader.sector}</span>
-                <h3 className="font-serif text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                  {leader.name}
-                </h3>
-                <p className="text-sm text-muted-foreground">{leader.role}</p>
-              </div>
+              <div className="p-6">
+                {/* Info */}
+                <div className="space-y-2">
+                  <span className="category-tag text-xs">{leader.sector}</span>
+                  <h3 className="font-serif text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {leader.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{leader.role}</p>
+                </div>
 
-              {/* Quote */}
-              <blockquote className="mt-4 pt-4 border-t border-border">
-                <p className="text-sm text-muted-foreground italic leading-relaxed">
-                  "{leader.quote}"
-                </p>
-              </blockquote>
+                {/* Quote */}
+                {leader.quote && (
+                  <blockquote className="mt-4 pt-4 border-t border-border">
+                    <p className="text-sm text-muted-foreground italic leading-relaxed line-clamp-3">
+                      "{leader.quote}"
+                    </p>
+                  </blockquote>
+                )}
+              </div>
 
               {/* Hover indicator */}
               <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -93,7 +115,6 @@ export const LeaderProfiles = () => {
           ))}
         </div>
 
-        {/* View More Link */}
         <div className="text-center mt-12">
           <a
             href="#"
