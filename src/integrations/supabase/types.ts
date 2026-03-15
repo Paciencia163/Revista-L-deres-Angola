@@ -334,6 +334,39 @@ export type Database = {
         }
         Relationships: []
       }
+      magazine_cover: {
+        Row: {
+          cover_image_url: string | null
+          cover_subtitle: string | null
+          cover_title: string
+          created_at: string
+          edition_label: string | null
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          cover_subtitle?: string | null
+          cover_title?: string
+          created_at?: string
+          edition_label?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          cover_subtitle?: string | null
+          cover_title?: string
+          created_at?: string
+          edition_label?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
