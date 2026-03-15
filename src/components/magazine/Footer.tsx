@@ -104,11 +104,11 @@ export const Footer = () => {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
                 <span className="block text-foreground">Email</span>
-                contacto@lideresangola.ao
+                angolajobssummit@gmail.com
               </li>
               <li>
                 <span className="block text-foreground">Telefone</span>
-                +244 923 456 789
+                +244 922 812 224
               </li>
               <li>
                 <span className="block text-foreground">Endereço</span>
