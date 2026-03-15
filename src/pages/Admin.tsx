@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/magazine/ImageUpload";
 import { 
   LayoutDashboard, FileText, FolderOpen, Tag, BookOpen, 
-  MessageSquare, LogOut, Plus, Pencil, Trash2, Eye, EyeOff, Image, Users, UserCheck, Video
+  MessageSquare, LogOut, Plus, Pencil, Trash2, Eye, EyeOff, Image, Users, UserCheck, Video, Newspaper
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-type Tab = "articles" | "categories" | "editions" | "comments" | "banners" | "subscribers" | "leaders" | "interviews";
+type Tab = "articles" | "categories" | "editions" | "comments" | "banners" | "subscribers" | "leaders" | "interviews" | "cover";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -25,6 +25,7 @@ const Admin = () => {
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [leaders, setLeaders] = useState<any[]>([]);
   const [interviews, setInterviews] = useState<any[]>([]);
+  const [coverData, setCoverData] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
@@ -38,7 +39,7 @@ const Admin = () => {
   const [bannerForm, setBannerForm] = useState({ title: "", image_url: "", link_url: "", position: "homepage", is_active: true, display_order: 0 });
   const [leaderForm, setLeaderForm] = useState({ name: "", role: "", sector: "", quote: "", bio: "", photo_url: "", display_order: 0, is_published: false });
   const [interviewForm, setInterviewForm] = useState({ title: "", interviewee_name: "", interviewee_role: "", interviewee_photo_url: "", quote: "", video_url: "", video_duration: "", tags: "" as string, is_published: false, display_order: 0 });
-
+  const [coverForm, setCoverForm] = useState({ cover_image_url: "", cover_title: "A Visão de um Líder", cover_subtitle: "Estratégias para o crescimento económico sustentável", edition_label: "Edição Fevereiro 2026" });
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) navigate("/admin/login");
   }, [user, isAdmin, loading, navigate]);
@@ -48,7 +49,7 @@ const Admin = () => {
   }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [artRes, catRes, edRes, comRes, banRes, subRes, leadRes, intRes] = await Promise.all([
+    const [artRes, catRes, edRes, comRes, banRes, subRes, leadRes, intRes, covRes] = await Promise.all([
       supabase.from('articles' as any).select('*, categories(name)').order('created_at', { ascending: false }),
       supabase.from('categories' as any).select('*').order('name'),
       supabase.from('editions' as any).select('*').order('edition_number', { ascending: false }),
@@ -57,6 +58,7 @@ const Admin = () => {
       supabase.from('subscribers' as any).select('*').order('created_at', { ascending: false }),
       supabase.from('leader_profiles' as any).select('*').order('display_order'),
       supabase.from('interviews' as any).select('*').order('display_order'),
+      supabase.from('magazine_cover' as any).select('*').limit(1),
     ]);
     if (artRes.data) setArticles(artRes.data as any[]);
     if (catRes.data) setCategories(catRes.data as any[]);
@@ -66,6 +68,11 @@ const Admin = () => {
     if (subRes.data) setSubscribers(subRes.data as any[]);
     if (leadRes.data) setLeaders(leadRes.data as any[]);
     if (intRes.data) setInterviews(intRes.data as any[]);
+    if (covRes.data && (covRes.data as any[]).length > 0) {
+      const c = (covRes.data as any[])[0];
+      setCoverData(c);
+      setCoverForm({ cover_image_url: c.cover_image_url || "", cover_title: c.cover_title, cover_subtitle: c.cover_subtitle || "", edition_label: c.edition_label || "" });
+    }
   };
 
   const handleSaveArticle = async () => {
@@ -151,6 +158,18 @@ const Admin = () => {
     resetForm(); fetchAll();
   };
 
+  const handleSaveCover = async () => {
+    if (coverData) {
+      const { error } = await supabase.from('magazine_cover' as any).update(coverForm).eq('id', coverData.id);
+      if (error) { toast({ title: "Erro", description: error.message, variant: "destructive" }); return; }
+    } else {
+      const { error } = await supabase.from('magazine_cover' as any).insert({ ...coverForm, is_active: true } as any);
+      if (error) { toast({ title: "Erro", description: error.message, variant: "destructive" }); return; }
+    }
+    toast({ title: "Sucesso", description: "Capa da revista atualizada!" });
+    fetchAll();
+  };
+
   const handleDelete = async (table: string, id: string) => {
     const { error } = await supabase.from(table as any).delete().eq('id', id);
     if (error) { toast({ title: "Erro", description: error.message, variant: "destructive" }); return; }
@@ -186,6 +205,7 @@ const Admin = () => {
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="text-primary animate-pulse text-xl">A carregar...</div></div>;
 
   const tabs = [
+    { id: "cover" as Tab, label: "Capa", icon: Newspaper, count: coverData ? 1 : 0 },
     { id: "articles" as Tab, label: "Artigos", icon: FileText, count: articles.length },
     { id: "categories" as Tab, label: "Categorias", icon: Tag, count: categories.length },
     { id: "editions" as Tab, label: "Edições", icon: BookOpen, count: editions.length },
@@ -242,12 +262,37 @@ const Admin = () => {
 
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-serif font-semibold text-foreground capitalize">{tabs.find(t => t.id === activeTab)?.label}</h2>
-            {!["comments", "subscribers"].includes(activeTab) && (
+            {!["comments", "subscribers", "cover"].includes(activeTab) && (
               <Button variant="gold" size="sm" onClick={() => { resetForm(); setShowForm(!showForm); }}>
                 <Plus className="w-4 h-4 mr-2" /> {showForm ? "Cancelar" : "Novo"}
               </Button>
             )}
           </div>
+
+          {/* Cover Form */}
+          {activeTab === "cover" && (
+            <div className="bg-card border border-border rounded-lg p-6 mb-6 space-y-4">
+              <p className="text-sm text-muted-foreground">Configure a imagem e textos da capa da revista que aparece na página inicial.</p>
+              <ImageUpload value={coverForm.cover_image_url} onChange={(url) => setCoverForm({ ...coverForm, cover_image_url: url })} folder="covers" label="Imagem de capa da revista" />
+              <input placeholder="Título da capa" value={coverForm.cover_title} onChange={(e) => setCoverForm({ ...coverForm, cover_title: e.target.value })} className={inputClass} />
+              <input placeholder="Subtítulo" value={coverForm.cover_subtitle} onChange={(e) => setCoverForm({ ...coverForm, cover_subtitle: e.target.value })} className={inputClass} />
+              <input placeholder="Rótulo da edição (ex: Edição Março 2026)" value={coverForm.edition_label} onChange={(e) => setCoverForm({ ...coverForm, edition_label: e.target.value })} className={inputClass} />
+              <Button variant="gold" onClick={handleSaveCover}>{coverData ? "Atualizar" : "Guardar"} Capa</Button>
+              {coverForm.cover_image_url && (
+                <div className="mt-4 border border-border rounded-lg overflow-hidden">
+                  <p className="text-xs text-muted-foreground px-4 py-2 bg-muted">Pré-visualização</p>
+                  <div className="relative">
+                    <img src={coverForm.cover_image_url} alt="Preview capa" className="w-full aspect-[3/4] max-w-xs object-cover" />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent">
+                      <span className="text-xs uppercase tracking-wider text-primary">{coverForm.edition_label}</span>
+                      <h3 className="font-serif font-bold text-foreground mt-1">{coverForm.cover_title}</h3>
+                      <p className="text-sm text-muted-foreground">{coverForm.cover_subtitle}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Article Form */}
           {showForm && activeTab === "articles" && (
