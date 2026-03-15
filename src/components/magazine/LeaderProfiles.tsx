@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Leader {
@@ -60,71 +61,57 @@ export const LeaderProfiles = () => {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {leaders.map((leader, index) => (
-            <article
-              key={leader.id}
-              className="group relative bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_hsl(43_74%_49%/0.2)] cursor-pointer opacity-0 animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              {/* Number indicator */}
-              <div className="absolute top-3 right-3 z-10 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                {String(index + 1).padStart(2, "0")}
-              </div>
-
-              {/* Photo or avatar */}
-              {leader.photo_url ? (
-                <div className="w-full h-48 overflow-hidden">
-                  <img
-                    src={leader.photo_url}
-                    alt={leader.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-48 bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-                  <span className="text-5xl font-serif font-bold text-primary">
-                    {leader.name.charAt(0)}
-                  </span>
-                </div>
-              )}
-
-              <div className="p-6">
-                {/* Info */}
-                <div className="space-y-2">
-                  <span className="category-tag text-xs">{leader.sector}</span>
-                  <h3 className="font-serif text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {leader.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{leader.role}</p>
+            <Link key={leader.id} to={`/lider/${leader.id}`}>
+              <article
+                className="group relative bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_hsl(43_74%_49%/0.2)] cursor-pointer opacity-0 animate-fade-in h-full"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="absolute top-3 right-3 z-10 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                  {String(index + 1).padStart(2, "0")}
                 </div>
 
-                {/* Quote */}
-                {leader.quote && (
-                  <blockquote className="mt-4 pt-4 border-t border-border">
-                    <p className="text-sm text-muted-foreground italic leading-relaxed line-clamp-3">
-                      "{leader.quote}"
-                    </p>
-                  </blockquote>
+                {leader.photo_url ? (
+                  <div className="w-full h-48 overflow-hidden">
+                    <img src={leader.photo_url} alt={leader.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  </div>
+                ) : (
+                  <div className="w-full h-48 bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                    <span className="text-5xl font-serif font-bold text-primary">{leader.name.charAt(0)}</span>
+                  </div>
                 )}
-              </div>
 
-              {/* Hover indicator */}
-              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <ArrowUpRight className="w-5 h-5 text-primary" />
-              </div>
-            </article>
+                <div className="p-6">
+                  <div className="space-y-2">
+                    <span className="category-tag text-xs">{leader.sector}</span>
+                    <h3 className="font-serif text-xl font-semibold text-foreground group-hover:text-primary transition-colors">{leader.name}</h3>
+                    <p className="text-sm text-muted-foreground">{leader.role}</p>
+                  </div>
+
+                  {leader.quote && (
+                    <blockquote className="mt-4 pt-4 border-t border-border">
+                      <p className="text-sm text-muted-foreground italic leading-relaxed line-clamp-3">"{leader.quote}"</p>
+                    </blockquote>
+                  )}
+                </div>
+
+                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <ArrowUpRight className="w-5 h-5 text-primary" />
+                </div>
+              </article>
+            </Link>
           ))}
         </div>
 
         <div className="text-center mt-12">
-          <a
-            href="#"
+          <Link
+            to="/#lideres"
             className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors group"
           >
             <span className="font-sans text-sm uppercase tracking-wider border-b border-primary/30 group-hover:border-primary pb-1">
               Ver Todos os Perfis
             </span>
             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-          </a>
+          </Link>
         </div>
       </div>
     </section>

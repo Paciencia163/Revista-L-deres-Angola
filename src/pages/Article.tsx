@@ -5,6 +5,7 @@ import { Header } from "@/components/magazine/Header";
 import { Footer } from "@/components/magazine/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, User, Tag, MessageSquare, Send } from "lucide-react";
+import { SocialShare } from "@/components/magazine/SocialShare";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
@@ -134,13 +135,14 @@ const Article = () => {
               <p className="text-xl text-muted-foreground mt-4 max-w-3xl">{article.excerpt}</p>
             )}
 
-            <div className="flex items-center gap-6 mt-6 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-6 mt-6 text-sm text-muted-foreground">
               <span className="flex items-center gap-2"><User className="w-4 h-4" /> {article.author_name}</span>
               {article.published_at && (
                 <span className="flex items-center gap-2"><Calendar className="w-4 h-4" /> {new Date(article.published_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               )}
               <span className="flex items-center gap-2"><MessageSquare className="w-4 h-4" /> {comments.length} comentários</span>
             </div>
+            <SocialShare title={article.title} className="mt-6" />
           </div>
         </motion.div>
 
