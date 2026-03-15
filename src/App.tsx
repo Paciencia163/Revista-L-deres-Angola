@@ -6,11 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import LeaderPage from "./pages/LeaderPage";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 import Article from "./pages/Article";
 import Editions from "./pages/Editions";
 import CategoryArticles from "./pages/CategoryArticles";
+import Leaders from "./pages/Leaders";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/artigo/:slug" element={<Article />} />
             <Route path="/edicoes" element={<Editions />} />
             <Route path="/categoria/:slug" element={<CategoryArticles />} />
+            <Route path="/lider/:id" element={<LeaderPage />} />
+            <Route path="/lideres" element={<Leaders />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
