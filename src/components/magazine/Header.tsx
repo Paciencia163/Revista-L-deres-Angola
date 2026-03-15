@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SearchDialog } from "./SearchDialog";
 
 const navItems = [
   { label: "Início", href: "/" },
@@ -14,11 +13,8 @@ const navItems = [
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <>
-    <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
@@ -38,8 +34,9 @@ export const Header = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            <button className="text-foreground hover:text-primary transition-colors" onClick={() => setSearchOpen(true)}><Search className="w-5 h-5" /></button>
+            <button className="text-foreground hover:text-primary transition-colors"><Search className="w-5 h-5" /></button>
             <Button variant="gold" size="sm" className="hidden md:flex" asChild><a href="/#newsletter">Subscrever</a></Button>
+            <Button variant="outline" size="sm" className="hidden md:flex" asChild><Link to="/admin">Area reservada</Link></Button>
             <button className="lg:hidden text-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -57,11 +54,11 @@ export const Header = () => {
                 )
               ))}
               <Button variant="gold" className="mt-4 w-full" asChild><a href="/#newsletter" onClick={() => setIsMenuOpen(false)}>Subscrever</a></Button>
+              <Button variant="outline" className="mt-2 w-full" asChild><Link to="/admin" onClick={() => setIsMenuOpen(false)}>Area reservada</Link></Button>
             </div>
           </nav>
         )}
       </div>
     </header>
-    </>
   );
 };
