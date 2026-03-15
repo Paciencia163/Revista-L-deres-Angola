@@ -11,8 +11,16 @@ interface FeaturedArticle {
   categories: { name: string } | null;
 }
 
+interface CoverData {
+  cover_image_url: string | null;
+  cover_title: string;
+  cover_subtitle: string | null;
+  edition_label: string | null;
+}
+
 export const HeroSection = () => {
   const [headlines, setHeadlines] = useState<FeaturedArticle[]>([]);
+  const [cover, setCover] = useState<CoverData | null>(null);
 
   useEffect(() => {
     supabase
@@ -24,6 +32,15 @@ export const HeroSection = () => {
       .then(({ data }) => {
         if (data && data.length > 0) setHeadlines(data as any);
       });
+
+    supabase
+      .from("magazine_cover" as any)
+      .select("*")
+      .eq("is_active", true)
+      .limit(1)
+      .then(({ data }) => {
+        if (data && (data as any[]).length > 0) setCover((data as any[])[0]);
+      });
   }, []);
 
   const staticHeadlines = [
@@ -34,6 +51,10 @@ export const HeroSection = () => {
   ];
 
   const displayHeadlines = headlines.length > 0 ? headlines : staticHeadlines;
+  const coverImage = cover?.cover_image_url || leaderPortrait;
+  const coverTitle = cover?.cover_title || "A Visão de um Líder";
+  const coverSubtitle = cover?.cover_subtitle || "Estratégias para o crescimento económico sustentável";
+  const editionLabel = cover?.edition_label || "Edição Fevereiro 2026";
 
   return (
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
@@ -51,7 +72,7 @@ export const HeroSection = () => {
             <div className="space-y-6 opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <div className="inline-flex items-center gap-3 px-4 py-2 border border-primary/30 rounded-full">
                 <span className="w-2 h-2 bg-primary rounded-full animate-glow" />
-                <span className="category-tag">Edição Fevereiro 2026</span>
+                <span className="category-tag">{editionLabel}</span>
               </div>
               <h1 className="magazine-title leading-tight">
                 Líderes<br /><span className="text-foreground">Angola</span>
@@ -89,12 +110,12 @@ export const HeroSection = () => {
               <div className="absolute -inset-4 border border-primary/20 rounded-lg" />
               <div className="absolute -inset-8 border border-primary/10 rounded-lg hidden lg:block" />
               <div className="relative overflow-hidden rounded-lg shadow-[0_25px_80px_-20px_hsl(43_74%_49%/0.3)]">
-                <img src={leaderPortrait} alt="Líder Empresarial Angolano" className="w-full aspect-[3/4] object-cover" />
+                <img src={coverImage} alt="Capa da Revista Líderes Angola" className="w-full aspect-[3/4] object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
                   <span className="category-tag">Capa</span>
-                  <h2 className="text-2xl lg:text-3xl font-serif font-bold text-foreground mt-2">A Visão de um Líder</h2>
-                  <p className="text-muted-foreground mt-2">Estratégias para o crescimento económico sustentável</p>
+                  <h2 className="text-2xl lg:text-3xl font-serif font-bold text-foreground mt-2">{coverTitle}</h2>
+                  <p className="text-muted-foreground mt-2">{coverSubtitle}</p>
                 </div>
               </div>
               <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-primary" />
